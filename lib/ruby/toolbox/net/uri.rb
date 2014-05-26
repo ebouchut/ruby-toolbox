@@ -2,11 +2,16 @@
 module Ruby
   module Toolbox
     module Net
-      
+
       class Uri
 
         def initialize(uri)
-          @uri = uri
+          @uri = case uri
+          when String
+            URI.parse(uri)
+          else
+            uri
+          end
         end
 
 
@@ -35,23 +40,36 @@ module Ruby
           components_except_query       = @uri.select(*(@uri.component - [:query]))
 
           (
-            other_components_except_query == components_except_query &&
+            other_components_except_query == components_except_query && 
             query_params(other_uri)       == query_params(@uri)
           )
         end
 
 
-        # TODO: Doc + Test
+        def params_array
+          @params_array ||= URI.decode_www_form(@uri.query)        
+        end
+
+
+        # @return [Hash] the query parameters as a Hash
+        # @raise URI::InvalidURIError
+        #
         def params_hash
-          uri = URI.parse(@uri)
-          params_array = URI.decode_www_form(uri.query)
-  #TODO:        return params_array.to_h if RUBY_VERSION  <= 2.1
-          if params_array.nil? 
-            {} 
+          if RUBY_VERSION[0..1].to_f >= 2.1
+            params_array.to_h  # Builtin in Ruby 2.1+
           else
-            Hash[*params_array.flatten]
+            symbolize_keys( Hash[*params_array.flatten])
           end
         end
+
+
+        #~~~~~~~~~~~~~~~~~
+        private 
+
+        def symbolize_keys(hash)
+          Hash[ hash.map { |key, value|  [ key.to_sym, value ] }]
+        end
+
       end
       
     end

@@ -7,6 +7,6 @@ describe Ruby::Toolbox::Net::Uri do
 	end
 
 	it '#params_hash returns a hash of parameters {name, value}' do
-    	subject.params_hash.must_equal({a: 2, b: 3})
+    	subject.params_hash.must_equal({a: "2", b: "3"})
   	end
 end
